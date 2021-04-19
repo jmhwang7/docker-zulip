@@ -274,8 +274,13 @@ zulipConfiguration() {
         fi
         setConfigurationValue "$setting_key" "$setting_var" "$SETTINGS_PY" "$type"
     done
-    crudini --set /etc/zulip/zulip.conf application_server queue_workers_multiprocess false
-    /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+    if [ "$QUEUE_WORKERS_MULTIPROCESS" = "True" ] || [ "$QUEUE_WORKERS_MULTIPROCESS" = "true" ]; then
+        crudini --set /etc/zulip/zulip.conf application_server queue_workers_multiprocess true
+        /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+    elif [ "$QUEUE_WORKERS_MULTIPROCESS" = "False" ] || [ "$QUEUE_WORKERS_MULTIPROCESS" = "false" ]; then
+        crudini --set /etc/zulip/zulip.conf application_server queue_workers_multiprocess false
+        /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+    fi
     if ! su zulip -c "/home/zulip/deployments/current/manage.py checkconfig"; then
         echo "Error in the Zulip configuration. Exiting."
         exit 1
