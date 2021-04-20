@@ -124,6 +124,13 @@ nginxConfiguration() {
     if [ "$DISABLE_HTTPS" == "True" ] || [ "$DISABLE_HTTPS" == "true" ]; then
         echo "Disabling https in nginx."
         crudini --set /etc/zulip/zulip.conf application_server http_only true
+        if [ "$QUEUE_WORKERS_MULTIPROCESS" == "True" ] || [ "$QUEUE_WORKERS_MULTIPROCESS" == "true" ]; then
+            crudini --set /etc/zulip/zulip.conf application_server queue_workers_multiprocess true
+            # /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+        elif [ "$QUEUE_WORKERS_MULTIPROCESS" == "False" ] || [ "$QUEUE_WORKERS_MULTIPROCESS" == "false" ]; then
+            crudini --set /etc/zulip/zulip.conf application_server queue_workers_multiprocess false
+            # /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+        fi
         /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
     fi
     sed -i "s/worker_processes .*/worker_processes $NGINX_WORKERS;/g" /etc/nginx/nginx.conf
@@ -238,19 +245,19 @@ authenticationBackends() {
 }
 zulipConfiguration() {
     echo "Executing Zulip configuration ..."
-    if [ ! -e "$DATA_DIR/zulip.conf" ]; then
-        mv "/etc/zulip/zulip.conf" "$DATA_DIR/zulip.conf"
-        ln -ns "$DATA_DIR/zulip.conf" "/etc/zulip/zulip.conf"
-    else
-        ln -nsf "$DATA_DIR/zulip.conf" "/etc/zulip/zulip.conf"
-    fi
-    if [ "$QUEUE_WORKERS_MULTIPROCESS" == "True" ] || [ "$QUEUE_WORKERS_MULTIPROCESS" == "true" ]; then
-        crudini --set /etc/zulip/zulip.conf application_server queue_workers_multiprocess true
-        /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
-    elif [ "$QUEUE_WORKERS_MULTIPROCESS" == "False" ] || [ "$QUEUE_WORKERS_MULTIPROCESS" == "false" ]; then
-        crudini --set /etc/zulip/zulip.conf application_server queue_workers_multiprocess false
-        /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
-    fi
+    # if [ ! -e "$DATA_DIR/zulip.conf" ]; then
+    #     mv "/etc/zulip/zulip.conf" "$DATA_DIR/zulip.conf"
+    #     ln -ns "$DATA_DIR/zulip.conf" "/etc/zulip/zulip.conf"
+    # else
+    #     ln -nsf "$DATA_DIR/zulip.conf" "/etc/zulip/zulip.conf"
+    # fi
+    # if [ "$QUEUE_WORKERS_MULTIPROCESS" == "True" ] || [ "$QUEUE_WORKERS_MULTIPROCESS" == "true" ]; then
+    #     crudini --set /etc/zulip/zulip.conf application_server queue_workers_multiprocess true
+    #     /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+    # elif [ "$QUEUE_WORKERS_MULTIPROCESS" == "False" ] || [ "$QUEUE_WORKERS_MULTIPROCESS" == "false" ]; then
+    #     crudini --set /etc/zulip/zulip.conf application_server queue_workers_multiprocess false
+    #     /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+    # fi
     if [ -n "$ZULIP_CUSTOM_SETTINGS" ]; then
         echo -e "\n$ZULIP_CUSTOM_SETTINGS" >> "$SETTINGS_PY"
     fi
